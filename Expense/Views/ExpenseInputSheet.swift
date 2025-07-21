@@ -6,63 +6,12 @@
 //
 
 import SwiftUI
-
-enum ExpenseType : CaseIterable{
-    case Personal
-    case Business
-    
-    func getString() -> String{
-        switch self{
-        case .Personal:
-            return "Personal"
-        case .Business:
-            return "Business"
-        }
-    }
-}
-
-enum ExpenseCurrency: CaseIterable {
-    case USD
-    case PKR
-    case EUR
-    
-    func getString() -> String{
-        switch self{
-        case .USD:
-            return "USD"
-        case .PKR:
-            return "PKR"
-        case .EUR:
-            return "EUR"
-        }
-    }
-    
-    func getSymbol() -> String{
-        switch self{
-        case .USD:
-            return "$"
-        case .PKR:
-            return "Rs"
-        case .EUR:
-            return "€"
-        }
-    }
-}
-
-struct Expense : Identifiable{
-    var id:UUID = UUID()
-    var name: String = ""
-    var type: ExpenseType = .Personal
-    var currency: ExpenseCurrency = .USD
-    var amount: String = " "
-}
-
 struct ExpenseInputSheet: View {
     
     @Binding var isPresented:Bool
     @State var expense:Expense = Expense()
     @FocusState var isInputActive : Bool
-    @EnvironmentObject var expenseData: ExpenseData
+    @EnvironmentObject var viewModel: ExpenseViewModel
     let backgroundColor = Color(UIColor.systemGray6)
     
     var body: some View {
@@ -84,21 +33,13 @@ struct ExpenseInputSheet: View {
     
     var saveButton: some View {
         Button("Save") {
-            AddExpenseToList()
+            viewModel.addExpense(expense)
             isPresented.toggle()
             isInputActive = false
           }
         }
     
-    func AddExpenseToList() -> Void{
-        if expense.type == .Personal{
-            expenseData.personalExpense.append(expense)
-        }
-        else if expense.type == .Business{
-            expenseData.businessExpense.append(expense)
-        }
-    }
-    
+
     var typePicker: some View{
         Picker("Type", selection: $expense.type) {
             ForEach(ExpenseType.allCases, id: \.self) {
@@ -144,3 +85,4 @@ struct ExpenseInputSheet: View {
     }
     
 }
+
