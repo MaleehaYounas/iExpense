@@ -7,9 +7,9 @@
 import SwiftUI
 
 struct ContentView: View {
-    
+    @StateObject var viewModel = ExpenseViewModel()
+
     @State var isPresented: Bool = false
-    @EnvironmentObject var viewModel: ExpenseViewModel
     let backgroundColor = Color(UIColor.systemGray6)
     
     var body: some View {
