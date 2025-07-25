@@ -22,20 +22,22 @@ struct ExpenseInputSheet: View {
             Form{
                 Section{
                     TextField("Name", text: $expense.name)
-                    
                     typePicker
                     currencyField
                 }
                 
             }
+           
         }
     }
     
     var saveButton: some View {
         Button("Save") {
             viewModel.addExpense(expense)
-            isPresented.toggle()
-            isInputActive = false
+            if !viewModel.showAlert{
+                isPresented.toggle()
+                isInputActive = false
+            }
           }
         }
     
@@ -51,18 +53,25 @@ struct ExpenseInputSheet: View {
     }
     
     var currencyField:some View{
-        HStack{
-            Text("\(expense.currency.getSymbol())")
-            TextField("0.00", text: $expense.amount)
-                .keyboardType(.decimalPad)
-                .focused($isInputActive)
-            Picker(" ", selection: $expense.currency) {
-                ForEach(ExpenseCurrency.allCases, id: \.self) {
-                    expCurr in
-                    Text(expCurr.getString())
-                }
-                
-            }.pickerStyle(.menu)
+        VStack{
+            HStack{
+                Text("\(expense.currency.getSymbol())")
+                TextField("0.00", text: $expense.amount)
+                    .keyboardType(.decimalPad)
+                    .focused($isInputActive)
+                Picker(" ", selection: $expense.currency) {
+                    ForEach(ExpenseCurrency.allCases, id: \.self) {
+                        expCurr in
+                        Text(expCurr.getString())
+                    }
+                    
+                }.pickerStyle(.menu)
+            }
+            
+            if viewModel.showAlert{
+                Text("You can't choose any other currency")
+                    .foregroundColor(.red)
+            }
         }
     }
     

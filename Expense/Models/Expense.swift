@@ -1,7 +1,7 @@
 import SwiftUI
 
 
-enum ExpenseType : CaseIterable{
+enum ExpenseType : CaseIterable, Codable{
     case Personal
     case Business
     
@@ -15,7 +15,7 @@ enum ExpenseType : CaseIterable{
     }
 }
 
-enum ExpenseCurrency: CaseIterable {
+enum ExpenseCurrency: CaseIterable, Codable {
     case USD
     case PKR
     case EUR
@@ -43,11 +43,23 @@ enum ExpenseCurrency: CaseIterable {
     }
 }
 
-struct Expense : Identifiable{
+struct Expense : Identifiable, Codable{
     var id:UUID = UUID()
     var name: String = ""
     var type: ExpenseType = .Personal
     var currency: ExpenseCurrency = .USD
-    var amount: String = " "
+    var amount: String = ""
+}
+
+enum SortOption {
+    case name
+    case price
+}
+
+extension String {
+    func toDouble() -> Double {
+        let trimmed = self.trimmingCharacters(in: .whitespacesAndNewlines)
+        return Double(trimmed) ?? 0.0
+    }
 }
 
