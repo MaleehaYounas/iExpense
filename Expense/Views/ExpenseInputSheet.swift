@@ -24,8 +24,16 @@ struct ExpenseInputSheet: View {
                     TextField("Name", text: $expense.name)
                     typePicker
                     currencyField
+                    
                 }
-                
+                if viewModel.showAlert{
+                    Text("You can't choose any other currency")
+                        .foregroundColor(Color.red)
+                }
+                if viewModel.ShowErorr{
+                    Text("Please fill all the fields")
+                        .foregroundColor(Color.red)
+                }
             }
            
         }
@@ -33,8 +41,8 @@ struct ExpenseInputSheet: View {
     
     var saveButton: some View {
         Button("Save") {
-            viewModel.addExpense(expense)
-            if !viewModel.showAlert{
+                viewModel.addExpense(expense)
+            if !viewModel.showAlert && !viewModel.ShowErorr{
                 isPresented.toggle()
                 isInputActive = false
             }
@@ -68,10 +76,7 @@ struct ExpenseInputSheet: View {
                 }.pickerStyle(.menu)
             }
             
-            if viewModel.showAlert{
-                Text("You can't choose any other currency")
-                    .foregroundColor(.red)
-            }
+ 
         }
     }
     
@@ -82,6 +87,7 @@ struct ExpenseInputSheet: View {
                 Text("Add new expense")
                     .font(.title)
                     .padding(.leading)
+                    .padding(.bottom)
                 Spacer()
             }
             .toolbar {

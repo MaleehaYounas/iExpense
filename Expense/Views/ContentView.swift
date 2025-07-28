@@ -15,34 +15,47 @@ struct ContentView: View {
     
     let backgroundColor = Color(UIColor.systemGray6)
     
-    var body: some View {
-      VStack(alignment: .leading, spacing:0){
+        var body: some View {
+            VStack(alignment: .leading, spacing: 0) {
+                ToolBar
 
-          ToolBar
-          if !(viewModel.personalExpenses.isEmpty && viewModel.businessExpenses.isEmpty){
-              searchTextField
-          }else{
-              noDataText
-          }
+                if viewModel.personalExpenses.isEmpty && viewModel.businessExpenses.isEmpty && results.isEmpty {
+                    // No data
+                    VStack {
+                        ContentUnavailableView("Expenses not found!", systemImage: "doc.plaintext.fill")
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(backgroundColor)
+                }
+                else {
+                    searchTextField
 
-          if results.isEmpty{
-              
-              List{
-                  if !viewModel.personalExpenses.isEmpty{
-                      personalExpenseSection
-                  }
-                  if !viewModel.businessExpenses.isEmpty{
-                      businessExpenseSection
-                  }
-              }
-          }
-          else{
-              List{
-                  searchResultsSection
-              }
-          }
-            Spacer()
-      }.background(backgroundColor)
+                    if !searchInput.isEmpty && results.isEmpty {
+                        // Show no search results
+                        VStack {
+                            ContentUnavailableView("No matching expenses found", systemImage: "magnifyingglass.circle")
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(backgroundColor)
+                    } else {
+                        // Show all expenses
+                        List {
+                            if !results.isEmpty {
+                                searchResultsSection
+                            } else {
+                                if !viewModel.personalExpenses.isEmpty {
+                                    personalExpenseSection
+                                }
+                                if !viewModel.businessExpenses.isEmpty {
+                                    businessExpenseSection
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        
+            
     }
 
     var addButton: some View {
@@ -67,6 +80,7 @@ struct ContentView: View {
                 Text("iExpense")
                     .font(.title)
                     .padding(.leading)
+                    .padding(.vertical,10)
                 Spacer()
             }
             .toolbar {
@@ -86,46 +100,49 @@ struct ContentView: View {
             .font(.system(size: 30))
             .padding()
     }
-    
-    var searchTextField:some View{
-        ZStack(alignment: .leading) {
-            HStack{
+        var searchTextField: some View {
+        VStack{
+            HStack {
                 Image(systemName: "magnifyingglass")
-                    .resizable()
-                    .frame(width: 20, height: 20)
-                    .opacity(0.2)
-                    .padding(.leading, 10)
-                if searchInput.isEmpty {
-                    Text("Search")
-                        .foregroundColor(.gray.opacity(0.6))
-                        .padding(.leading, 5)
+                    .foregroundColor(.gray)
+                
+                TextField("Search", text: $searchInput)
+                    .focused($isInputActive)
+                    .onChange(of: searchInput) {
+                        results = viewModel.getSearchedResults(input: searchInput)
+                    }
+                
+                if !searchInput.isEmpty {
+                    Button(action: {
+                        searchInput = ""
+                        results = []
+                        isInputActive = false
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.gray)
+                    }
                 }
             }
-            TextField("", text: $searchInput)
-                .padding(.leading, 35)
-                .padding(.vertical, 7)
-                .background(RoundedRectangle(cornerRadius: 10)
-                    .fill(.clear)
-                    .overlay(RoundedRectangle(cornerRadius: 10)
-                        .stroke(Color.gray, lineWidth: 1)))
-                .focused($isInputActive)
-                                .toolbar {
-                                    ToolbarItemGroup(placement: .keyboard) {
-                                        Spacer()
-
-                                        Button("Done") {
-                                            isInputActive = false
-                                        }
-                                    }
-                                }
-                .onChange(of: searchInput) {
-                    results = viewModel.getSearchedResults(input: searchInput)
+            .padding(10)
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color(.systemGray5))
+            )
+            .padding(.horizontal, 20)
+            .padding(.vertical,20)
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        isInputActive = false
+                    }
                 }
-            
-        }.padding(20)
-            .background(backgroundColor)
-    }
+            }
+        }.background(backgroundColor)
            
+    }
+
+    
     var sortMenu: some View {
         Menu {
             Button("Sort by Name") {
@@ -143,6 +160,7 @@ struct ContentView: View {
 
     
 var searchResultsSection:some View{
+    
     Section {
         ForEach(results, id: \.id) {
             expenseObj in
@@ -209,6 +227,9 @@ var personalExpenseSection:some View{
                 Text("BUSINESS EXPENSES")
             }
     }
+    
+    
+    
     
   }
     
