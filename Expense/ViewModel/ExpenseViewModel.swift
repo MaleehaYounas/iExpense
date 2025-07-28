@@ -1,16 +1,13 @@
 import Foundation
 
 class ExpenseViewModel: ObservableObject {
-    @Published var personalExpenses: [Expense] = [] {
-        didSet {
-            saveData()
+    
+        @Published var Expenses: [Expense] = [] {
+            didSet {
+                saveData()
+            }
         }
-    }
-    @Published var businessExpenses: [Expense] = [] {
-        didSet {
-            saveData()
-        }
-    }
+    
     @Published var showAlert:Bool = false
     @Published var ShowErorr:Bool = false
 
@@ -18,15 +15,14 @@ class ExpenseViewModel: ObservableObject {
     init() {
         loadData()
     }
-    
+
     func addExpense(_ expense: Expense) {
-        switch expense.type {
-        case .Personal:
+        
             if validateInputs(expense: expense){
                 ShowErorr = false
-                if isPersonalCurrConsistent(expense: expense)
+                if isCurrConsistent(expense: expense)
                 {
-                    personalExpenses.append(expense)
+                    Expenses.append(expense)
                     showAlert = false
                 }
                 else
@@ -37,51 +33,23 @@ class ExpenseViewModel: ObservableObject {
             else{
                 ShowErorr = true
             }
-        case .Business:
-            if validateInputs(expense: expense){
-                ShowErorr = false
-                
-                if isBusinessCurrConsistent(expense: expense)
-                {
-                    businessExpenses.append(expense)
-                    showAlert = false
-                }
-                else{
-                    showAlert = true
-                }
-            }
-            else{
-                ShowErorr = true
-                
-                
-            }
-        }
+       
     }
     
-    
-    
-    func deletePersonalExpense(at offsets: IndexSet) {
-        personalExpenses.remove(atOffsets: offsets)
+
+    func deleteExpenses(at offsets: IndexSet) {
+        Expenses.remove(atOffsets: offsets)
+        saveData()
     }
     
-    func deleteBusinessExpense(at offsets: IndexSet) {
-        businessExpenses.remove(atOffsets: offsets)
-    }
-    
+
     func getSearchedResults(input:String) -> [Expense] {
         var searchResults:[Expense] = []
-        for i in 0..<personalExpenses.count {
-            if personalExpenses[i].name.contains(input)
+        for i in 0..<Expenses.count {
+            if Expenses[i].name.contains(input)
             {
-                searchResults.append(personalExpenses[i])
+                searchResults.append(Expenses[i])
                 
-            }
-        }
-        for i in 0..<businessExpenses.count {
-            if businessExpenses[i].name.contains(input)
-            {
-                searchResults.append(businessExpenses[i])
-            
             }
         }
         return searchResults
@@ -91,8 +59,7 @@ class ExpenseViewModel: ObservableObject {
 
     private func saveData() {
         let encoder = JSONEncoder()
-        let allExpenses = personalExpenses + businessExpenses
-        if let data = try? encoder.encode(allExpenses) {
+        if let data = try? encoder.encode(Expenses) {
             UserDefaults.standard.set(data, forKey: allExpensesKey)
         }
     }
@@ -100,35 +67,27 @@ class ExpenseViewModel: ObservableObject {
     private func loadData() {
         let decoder = JSONDecoder()
         if let data = UserDefaults.standard.data(forKey: allExpensesKey),
-           let allExpenses = try? decoder.decode([Expense].self, from: data) {
-            self.personalExpenses = allExpenses.filter { $0.type == .Personal }
-            self.businessExpenses = allExpenses.filter { $0.type == .Business }
+           let decodedExpenses = try? decoder.decode([Expense].self, from: data) {
+            self.Expenses = decodedExpenses
         }
     }
 
+    
     func sortExpenses(by option: SortOption) {
         switch option {
         case .name:
-            personalExpenses.sort { $0.name.lowercased() < $1.name.lowercased() }
-            businessExpenses.sort { $0.name.lowercased() < $1.name.lowercased() }
+            Expenses.sort { $0.name.lowercased() < $1.name.lowercased() }
         case .price:
-            personalExpenses.sort { ($0.amount.toDouble()) < ($1.amount.toDouble()) }
-            businessExpenses.sort { ($0.amount.toDouble()) < ($1.amount.toDouble()) }
+            Expenses.sort { ($0.amount.toDouble()) < ($1.amount.toDouble()) }
         }
     }
+
     
-    func isPersonalCurrConsistent(expense: Expense) -> Bool {
-        if personalExpenses.isEmpty {
+    func isCurrConsistent(expense: Expense) -> Bool {
+        if Expenses.isEmpty {
             return true
         }
-        return personalExpenses.allSatisfy { $0.currency == expense.currency }
-    }
-    
-    func isBusinessCurrConsistent(expense: Expense) -> Bool {
-        if businessExpenses.isEmpty {
-            return true
-        }
-        return businessExpenses.allSatisfy { $0.currency == expense.currency }
+        return Expenses.allSatisfy { $0.currency == expense.currency }
     }
     
     func validateInputs(expense:Expense) -> Bool {
