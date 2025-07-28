@@ -78,12 +78,6 @@ struct ContentView: View {
         .frame(height: 70)
     }
     
-    var noDataText:some View{
-        Text("There are no expenses!")
-            .font(.headline)
-            .font(.system(size: 30))
-            .padding()
-    }
     var searchTextField: some View {
         VStack{
             HStack {
